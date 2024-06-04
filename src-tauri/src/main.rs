@@ -3,6 +3,10 @@
     windows_subsystem = "windows"
 )]
 
+struct Media {
+    title: String,
+}
+
 #[tauri::command]
 fn add_media() -> String {
     return "All good".to_string();
