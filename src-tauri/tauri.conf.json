@@ -32,7 +32,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.obibli.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -61,7 +61,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "obibli",
+        "title": "Obibli",
         "width": 800
       }
     ]
