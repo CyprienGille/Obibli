@@ -106,57 +106,41 @@
 	}
 </script>
 
-<main class="h-full w-full">
-	<div class="mb-2 mt-1 flex w-full justify-evenly">
-		<button
-			class="rounded-md bg-blue-300 p-2 text-xl text-slate-800 hover:bg-blue-500"
-			type="button"
-			on:click={load_data}
-		>
+<main class="h-dvh w-dvw">
+	<div class="mb-2 mt-1 flex h-12 w-full justify-evenly">
+		<button class="variant-filled-success btn text-xl" type="button" on:click={load_data}>
 			Charger
 		</button>
 
 		{#await unsaved_promise then unsaved}
 			{#if unsaved}
-				<button
-					class="rounded-md bg-red-700 p-2 text-xl text-slate-100 hover:bg-red-500"
-					type="button"
-					on:click={save_data}
-				>
+				<button class="variant-filled-error btn text-xl" type="button" on:click={save_data}>
 					Sauvegarder
 				</button>
 			{:else}
-				<button
-					class="rounded-md bg-green-400 p-2 text-xl text-slate-900 hover:bg-green-500"
-					type="button"
-					on:click={save_data}
-				>
+				<button class="variant-filled-success btn text-xl" type="button" on:click={save_data}>
 					Sauvegarder
 				</button>
 			{/if}
 		{/await}
 	</div>
-	<div class="h-full w-full">
+	<div class="h-[calc(100dvh-3rem)] w-full">
 		{#await promise}
 			<div class="flex h-full w-full items-center justify-center">
-				<div class="rounded bg-slate-900 p-3 text-3xl text-slate-100">Chargement...</div>
+				<div class="variant-filled-surface rounded-lg p-3 text-3xl">Chargement...</div>
 			</div>
 		{:then lib}
-			<div>
+			<div class="h-full w-full">
 				{#if nav_id != 0}
 					<div class="justify-normal text-center">
-						<button
-							class="mb-2 mr-4 rounded bg-slate-100 py-2 text-5xl"
-							type="button"
-							on:click={go_home}>🏠</button
-						>
+						<button class="btn text-5xl" type="button" on:click={go_home}>🏠</button>
 					</div>
 				{/if}
 
 				{#if nav_id == 0}
-					<div class="flex h-full items-center justify-evenly">
+					<div class="flex items-center justify-evenly">
 						<button
-							class="h-full w-full rounded-xl bg-blue-500 px-4 py-4 text-4xl font-bold text-white hover:bg-blue-600"
+							class="btn mx-3 w-full rounded-xl bg-blue-500 px-4 py-4 text-4xl font-bold text-white hover:bg-blue-600"
 							type="button"
 							on:click={go_to_add}
 						>
@@ -164,7 +148,7 @@
 						</button>
 						<img class="mx-1 h-20 w-auto" src={logo} alt="the obibli logo" />
 						<button
-							class="h-full w-full rounded-xl bg-blue-500 px-4 py-4 text-4xl font-bold text-white hover:bg-blue-600"
+							class="btn mx-3 w-full rounded-xl bg-blue-500 px-4 py-4 text-4xl font-bold text-white hover:bg-blue-600"
 							type="button"
 							on:click={go_to_browse}
 						>
@@ -173,8 +157,8 @@
 					</div>
 				{:else if nav_id == 1}
 					<!-- Adding UI -->
-					<div class="flex justify-evenly">
-						<div class="">
+					<div class="logo-cloud mx-1 grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-3">
+						<div class=" logo-item">
 							<div class="text-lg font-bold text-slate-900">Titre</div>
 							<input
 								class="rounded-md border-2 border-slate-400 px-3 py-2"
@@ -184,7 +168,7 @@
 								bind:value={new_media.title}
 							/>
 						</div>
-						<div>
+						<div class=" logo-item">
 							<div class="text-lg font-bold text-slate-900">Auteur</div>
 							<input
 								class="rounded-md border-2 border-slate-400 px-3 py-2"
@@ -205,7 +189,7 @@
 								{/await}
 							</datalist>
 						</div>
-						<div class="">
+						<div class=" logo-item">
 							<div class="text-lg font-bold text-slate-900">Année</div>
 							<input
 								class="rounded-md border-2 border-slate-400 px-3 py-2"
@@ -214,7 +198,7 @@
 								bind:value={new_media.year}
 							/>
 						</div>
-						<div class="">
+						<div class=" logo-item">
 							<div class="text-lg font-bold text-slate-900">Copies</div>
 							<input
 								class="rounded-md border-2 border-slate-400 px-3 py-2"
@@ -223,9 +207,8 @@
 								bind:value={new_media.copies}
 							/>
 						</div>
-					</div>
-					<div class="flex justify-evenly">
-						<div>
+
+						<div class=" logo-item">
 							<div class="text-lg font-bold text-slate-900">Genre</div>
 							<input
 								class="rounded-md border-2 border-slate-400 px-3 py-2"
@@ -246,7 +229,7 @@
 								{/await}
 							</datalist>
 						</div>
-						<div>
+						<div class=" logo-item">
 							<div class="text-lg font-bold text-slate-900">Emplacement</div>
 							<input
 								class="rounded-md border-2 border-slate-400 px-3 py-2"
@@ -267,9 +250,8 @@
 								{/await}
 							</datalist>
 						</div>
-					</div>
-					<div class="flex justify-evenly">
-						<div>
+
+						<div class="logo-item col-span-1 md:col-span-2 lg:col-span-3">
 							<div class="text-lg font-bold text-slate-900">Notes</div>
 							<textarea
 								class="rounded-md border-2 border-slate-400 p-2"
