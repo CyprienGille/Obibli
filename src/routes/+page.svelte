@@ -1,18 +1,18 @@
-<script>
+<script lang="ts">
 	import logo from '$lib/assets/obibli.svg';
 	import { invoke } from '@tauri-apps/api/tauri';
 
-	let promise = invoke('get_empty');
-	let unsaved_promise = invoke('get_false');
-	let names_promise = invoke('get_empty');
-	let genres_promise = invoke('get_empty');
-	let locations_promise = invoke('get_empty');
+	let promise: Promise<Array<Media>> = invoke('get_empty');
+	let unsaved_promise: Promise<boolean> = invoke('get_false');
+	let names_promise: Promise<Array<string>> = invoke('get_empty');
+	let genres_promise: Promise<Array<string>> = invoke('get_empty');
+	let locations_promise: Promise<Array<string>> = invoke('get_empty');
 
 	let nav_id = -1; //0 for home, -1 for browse, 1 for add
 	let details_id = -1;
 	let query = '';
 
-	let new_media = {
+	let new_media: Media = {
 		title: '',
 		author: '',
 		genre: '',
@@ -44,10 +44,10 @@
 		nav_id = 0;
 	}
 
-	/**
-	 * @param {number} id
-	 */
-	function display_details(id) {
+	function display_details(id: number | undefined) {
+		if (id === undefined) {
+			return;
+		}
 		if (details_id == id) {
 			details_id = -1;
 		} else {
@@ -55,10 +55,7 @@
 		}
 	}
 
-	/**
-	 * @param {string} by
-	 */
-	function get_sorted(by) {
+	function get_sorted(by: string) {
 		promise = invoke('get_sorted_medias', { by });
 	}
 
@@ -86,7 +83,7 @@
 	/**
 	 * @param {string} query
 	 */
-	function get_search_results(query) {
+	function get_search_results() {
 		promise = invoke('get_filtered_medias', { query });
 	}
 
@@ -103,6 +100,12 @@
 	}
 	function get_filtered_locations() {
 		locations_promise = invoke('get_filtered_locations', { substring: new_media.location });
+	}
+
+	function handleEnterKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			get_search_results();
+		}
 	}
 </script>
 
@@ -277,58 +280,69 @@
 				{:else if nav_id == -1}
 					<!-- Browsing UI -->
 					<div class="mb-2 flex justify-center">
-						<input class="input w-80" type="text" bind:value={query} />
-						<button class="btn text-2xl" on:click={() => get_search_results(query)}>🔎</button>
+						<input
+							class="input w-80"
+							type="text"
+							id="search"
+							bind:value={query}
+							on:keydown={handleEnterKeyDown}
+						/>
+						<button class="btn text-2xl" on:click={get_search_results}>🔎</button>
 						<button class="btn text-2xl" on:click={reset_search}>❌</button>
 					</div>
-					<div class="mx-2 text-slate-800">
-						<div class="flex font-semibold">
-							<div class="w-1/4">
-								<button class="underline" on:click={() => get_sorted('title')}> Titre </button>
-							</div>
-							<div class="w-1/12">
-								<button class="underline" on:click={() => get_sorted('year')}> Année </button>
-							</div>
-							<div class="w-1/4">
-								<button class="underline" on:click={() => get_sorted('author')}> Auteur </button>
-							</div>
-							<div class="w-1/6">Genre</div>
-							<div class="w-1/4">Emplacement</div>
-						</div>
-						{#each lib as media}
-							<div class="rounded border-2">
-								<div class="flex">
-									<div class="w-1/4">
-										<button
-											class="ml-1 text-blue-500 underline"
-											on:click={() => display_details(media.id)}
-										>
-											{media.title}
+					<div class="table-container">
+						<table class="table table-interactive table-compact">
+							<thead>
+								<tr>
+									<th>
+										<button class="underline" on:click={() => get_sorted('title')}> Titre </button>
+									</th>
+									<th>
+										<button class="underline" on:click={() => get_sorted('year')}> Année </button>
+									</th>
+									<th>
+										<button class="underline" on:click={() => get_sorted('author')}>
+											Auteur
 										</button>
-									</div>
-									<div class="w-1/12">{media.year}</div>
-									<div class="w-1/4">
-										{media.author}
-									</div>
-									<div class="w-1/6">
-										{media.genre}
-									</div>
-									<div class="w-1/4">
-										{media.location}
-									</div>
-								</div>
-								{#if details_id == media.id}
-									<div class="flex font-semibold">
-										<div class="w-1/4">Copies</div>
-										<div class="w-3/4">Notes</div>
-									</div>
-									<div class="mb-4 flex">
-										<div class="w-1/4">{media.copies}</div>
-										<div class="w-3/4 whitespace-pre-line">{media.notes}</div>
-									</div>
-								{/if}
-							</div>
-						{/each}
+									</th>
+									<th>Genre</th>
+									<th>Emplacement</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each lib as media}
+									<tr on:click={() => display_details(media.id)}>
+										<td>
+											{media.title}
+										</td>
+										<td>
+											{media.year}
+										</td>
+										<td>
+											{media.author}
+										</td>
+										<td>
+											{media.genre}
+										</td>
+										<td>
+											{media.location}
+										</td>
+									</tr>
+									{#if details_id == media.id}
+										<tr>
+											<td>
+												<div class="font-bold">Copies</div>
+												<div class="">{media.copies}</div>
+											</td>
+											<td colspan="4">
+												<div class="font-bold">Notes</div>
+												<div class="whitespace-pre-line">{media.notes}</div>
+											</td>
+										</tr>
+									{/if}
+								{/each}
+							</tbody>
+						</table>
 					</div>
 				{/if}
 			</div>
