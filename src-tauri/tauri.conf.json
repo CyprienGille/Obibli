@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "obibli",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "tauri": {
     "allowlist": {
@@ -60,9 +60,9 @@
       {
         "fullscreen": false,
         "height": 600,
+        "width": 800,
         "resizable": true,
-        "title": "Obibli",
-        "width": 800
+        "title": "Obibli"
       }
     ]
   }
