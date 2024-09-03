@@ -8,7 +8,7 @@
 	let genres_promise: Promise<Array<string>> = invoke('get_empty');
 	let locations_promise: Promise<Array<string>> = invoke('get_empty');
 
-	let nav_id = -1; //0 for home, -1 for browse, 1 for add
+	let nav_id = 0; //0 for home, -1 for browse, 1 for add
 	let details_id = -1;
 	let query = '';
 
