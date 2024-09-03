@@ -19,6 +19,7 @@ const config = {
 		extend: {},
 	},
 	plugins: [
+		require('@tailwindcss/forms'),
 		// 4. Append the Skeleton plugin (after other plugins)
 		skeleton({
 			themes: {preset: [{name:"skeleton", enhancements:true}]}

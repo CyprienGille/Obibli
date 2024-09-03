@@ -59,8 +59,8 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
-        "width": 800,
+        "height": 740,
+        "width": 888,
         "resizable": true,
         "title": "Obibli"
       }

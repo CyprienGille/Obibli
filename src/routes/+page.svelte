@@ -8,7 +8,7 @@
 	let genres_promise = invoke('get_empty');
 	let locations_promise = invoke('get_empty');
 
-	let nav_id = 0; //0 for home, -1 for browse, 1 for add
+	let nav_id = -1; //0 for home, -1 for browse, 1 for add
 	let details_id = -1;
 	let query = '';
 
@@ -140,7 +140,7 @@
 				{#if nav_id == 0}
 					<div class="flex items-center justify-evenly">
 						<button
-							class="btn mx-3 w-full rounded-xl bg-blue-500 px-4 py-4 text-4xl font-bold text-white hover:bg-blue-600"
+							class="variant-filled-secondary btn mx-3 w-full rounded-xl px-4 py-4 text-4xl font-bold"
 							type="button"
 							on:click={go_to_add}
 						>
@@ -148,7 +148,7 @@
 						</button>
 						<img class="mx-1 h-20 w-auto" src={logo} alt="the obibli logo" />
 						<button
-							class="btn mx-3 w-full rounded-xl bg-blue-500 px-4 py-4 text-4xl font-bold text-white hover:bg-blue-600"
+							class="variant-filled-secondary btn mx-3 w-full rounded-xl px-4 py-4 text-4xl font-bold"
 							type="button"
 							on:click={go_to_browse}
 						>
@@ -158,114 +158,118 @@
 				{:else if nav_id == 1}
 					<!-- Adding UI -->
 					<div class="logo-cloud mx-1 grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-3">
-						<div class=" logo-item">
-							<div class="text-lg font-bold text-slate-900">Titre</div>
-							<input
-								class="rounded-md border-2 border-slate-400 px-3 py-2"
-								type="text"
-								name="title"
-								id="title"
-								bind:value={new_media.title}
-							/>
+						<div class="logo-item">
+							<label class="label text-lg font-bold">
+								<span>Titre</span>
+								<input
+									class="input"
+									type="text"
+									name="title"
+									id="title"
+									bind:value={new_media.title}
+								/>
+							</label>
 						</div>
-						<div class=" logo-item">
-							<div class="text-lg font-bold text-slate-900">Auteur</div>
-							<input
-								class="rounded-md border-2 border-slate-400 px-3 py-2"
-								type="text"
-								list="names"
-								id="author"
-								bind:value={new_media.author}
-								on:input={get_filtered_names}
-								on:focus={get_filtered_names}
-							/>
-							<datalist id="names">
-								{#await names_promise}
-									<option value=""></option>
-								{:then names}
-									{#each names as name}
-										<option value={name}>{name}</option>
-									{/each}
-								{/await}
-							</datalist>
+						<div class="logo-item">
+							<label class="label text-lg font-bold">
+								<span> Auteur </span>
+								<input
+									class="input"
+									type="text"
+									list="names"
+									id="author"
+									bind:value={new_media.author}
+									on:input={get_filtered_names}
+									on:focus={get_filtered_names}
+								/>
+								<datalist id="names">
+									{#await names_promise}
+										<option value=""></option>
+									{:then names}
+										{#each names as name}
+											<option value={name}>{name}</option>
+										{/each}
+									{/await}
+								</datalist>
+							</label>
 						</div>
-						<div class=" logo-item">
-							<div class="text-lg font-bold text-slate-900">Année</div>
-							<input
-								class="rounded-md border-2 border-slate-400 px-3 py-2"
-								type="number"
-								id="year"
-								bind:value={new_media.year}
-							/>
+						<div class="logo-item">
+							<label class="label text-lg font-bold">
+								<span>Année</span>
+								<input class="input" type="number" id="year" bind:value={new_media.year} />
+							</label>
 						</div>
-						<div class=" logo-item">
-							<div class="text-lg font-bold text-slate-900">Copies</div>
-							<input
-								class="rounded-md border-2 border-slate-400 px-3 py-2"
-								type="number"
-								id="copies"
-								bind:value={new_media.copies}
-							/>
+						<div class="logo-item">
+							<label class="label text-lg font-bold">
+								<span> Copies </span>
+								<input class="input" type="number" id="copies" bind:value={new_media.copies} />
+							</label>
 						</div>
 
-						<div class=" logo-item">
-							<div class="text-lg font-bold text-slate-900">Genre</div>
-							<input
-								class="rounded-md border-2 border-slate-400 px-3 py-2"
-								type="text"
-								list="genres"
-								id="genre"
-								bind:value={new_media.genre}
-								on:input={get_filtered_genres}
-								on:focus={get_filtered_genres}
-							/>
-							<datalist id="genres">
-								{#await genres_promise}
-									<option value=""></option>
-								{:then genres}
-									{#each genres as genre}
-										<option value={genre}>{genre}</option>
-									{/each}
-								{/await}
-							</datalist>
+						<div class="logo-item">
+							<label class="label text-lg font-bold">
+								<span> Genre </span>
+								<input
+									class="input"
+									type="text"
+									list="genres"
+									id="genre"
+									bind:value={new_media.genre}
+									on:input={get_filtered_genres}
+									on:focus={get_filtered_genres}
+								/>
+								<datalist id="genres">
+									{#await genres_promise}
+										<option value=""></option>
+									{:then genres}
+										{#each genres as genre}
+											<option value={genre}>{genre}</option>
+										{/each}
+									{/await}
+								</datalist>
+							</label>
 						</div>
-						<div class=" logo-item">
-							<div class="text-lg font-bold text-slate-900">Emplacement</div>
-							<input
-								class="rounded-md border-2 border-slate-400 px-3 py-2"
-								type="text"
-								list="locations"
-								id="location"
-								bind:value={new_media.location}
-								on:input={get_filtered_locations}
-								on:focus={get_filtered_locations}
-							/>
-							<datalist id="locations">
-								{#await locations_promise}
-									<option value=""></option>
-								{:then locations}
-									{#each locations as location}
-										<option value={location}>{location}</option>
-									{/each}
-								{/await}
-							</datalist>
+						<div class="logo-item">
+							<label class="text-lg font-bold">
+								<span> Emplacement </span>
+								<input
+									class="input"
+									type="text"
+									list="locations"
+									id="location"
+									bind:value={new_media.location}
+									on:input={get_filtered_locations}
+									on:focus={get_filtered_locations}
+								/>
+								<datalist id="locations">
+									{#await locations_promise}
+										<option value=""></option>
+									{:then locations}
+										{#each locations as location}
+											<option value={location}>{location}</option>
+										{/each}
+									{/await}
+								</datalist>
+							</label>
 						</div>
 
 						<div class="logo-item col-span-1 md:col-span-2 lg:col-span-3">
-							<div class="text-lg font-bold text-slate-900">Notes</div>
-							<textarea
-								class="rounded-md border-2 border-slate-400 p-2"
-								name="notes"
-								id="notes"
-								cols="40"
-								rows="4"
-								bind:value={new_media.notes}
-							></textarea>
+							<label class="label text-lg font-bold">
+								<span> Notes </span>
+								<textarea
+									class="textarea"
+									name="notes"
+									id="notes"
+									cols="40"
+									rows="4"
+									bind:value={new_media.notes}
+								></textarea>
+							</label>
 						</div>
 					</div>
 					<div class="flex w-full justify-center">
 						<button
-							class="mt-3 rounded-md bg-green-400 p-3 text-2xl hover:bg-green-500"
+							class="variant-filled-secondary btn mt-3 text-2xl"
 							type="button"
 							on:click={add_media}>Ajouter</button
 						>
@@ -273,9 +277,9 @@
 				{:else if nav_id == -1}
 					<!-- Browsing UI -->
 					<div class="mb-2 flex justify-center">
-						<input class="rounded-xl border-2 px-6 py-2" type="text" bind:value={query} />
-						<button class="text-2xl" on:click={() => get_search_results(query)}>🔎</button>
-						<button class="text-2xl" on:click={reset_search}>❌</button>
+						<input class="input w-80" type="text" bind:value={query} />
+						<button class="btn text-2xl" on:click={() => get_search_results(query)}>🔎</button>
+						<button class="btn text-2xl" on:click={reset_search}>❌</button>
 					</div>
 					<div class="mx-2 text-slate-800">
 						<div class="flex font-semibold">
