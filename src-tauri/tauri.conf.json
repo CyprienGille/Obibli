@@ -1,13 +1,13 @@
 {
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "bun run build",
+    "beforeDevCommand": "bun run dev",
     "devPath": "http://localhost:5173",
     "distDir": "../build"
   },
   "package": {
     "productName": "obibli",
-    "version": "0.2.0"
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {

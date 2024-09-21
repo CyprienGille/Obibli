@@ -49,6 +49,8 @@ pub fn main() {
             library::get_filtered_locations,
             library::get_sorted_medias,
             library::add_media,
+            library::edit_media,
+            library::remove_media,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

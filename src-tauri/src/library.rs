@@ -104,6 +104,54 @@ pub fn add_media(
 }
 
 #[tauri::command]
+pub fn edit_media(
+    id: u64,
+    changed_title: String,
+    changed_author: String,
+    changed_genre: String,
+    changed_copies: u64,
+    changed_year: i64,
+    changed_location: String,
+    changed_notes: String,
+    library: State<LibraryState>,
+    unsaved_state: State<UnsavedState>,
+) -> Result<(), String> {
+    let mut medias = library.medias.lock().unwrap();
+    if let Some(media_idx) = medias.iter().rposition(|media| media.id == id) {
+        medias[media_idx] = Media::new(
+            id,
+            changed_title,
+            changed_author,
+            changed_genre,
+            changed_copies,
+            changed_year,
+            changed_location,
+            changed_notes,
+        );
+        *unsaved_state.unsaved.lock().unwrap() = true;
+        Ok(())
+    } else {
+        Err("Could not find this id.".to_string())
+    }
+}
+
+#[tauri::command]
+pub fn remove_media(
+    id: u64,
+    library: State<LibraryState>,
+    unsaved_state: State<UnsavedState>,
+) -> Result<(), String> {
+    let mut medias = library.medias.lock().unwrap();
+    if let Some(media_idx) = medias.iter().rposition(|media| media.id == id) {
+        medias.remove(media_idx);
+        *unsaved_state.unsaved.lock().unwrap() = true;
+        Ok(())
+    } else {
+        Err("Could not find this id.".to_string())
+    }
+}
+
+#[tauri::command]
 pub fn get_all_medias(library: State<LibraryState>) -> Vec<Media> {
     return (*library.medias.lock().unwrap()).clone();
 }
@@ -126,16 +174,17 @@ pub fn get_sorted_medias(by: &str, library: State<LibraryState>) -> Vec<Media> {
 
 #[tauri::command]
 pub fn get_filtered_medias(query: String, library: State<LibraryState>) -> Vec<Media> {
+    let normalized_query = query.to_lowercase();
     Vec::from_iter(
         (*library.medias.lock().unwrap())
             .clone()
             .into_iter()
             .filter(|media| {
-                media.title.contains(&query)
-                    | media.author.contains(&query)
-                    | media.genre.contains(&query)
-                    | media.location.contains(&query)
-                    | media.notes.contains(&query)
+                media.title.to_lowercase().contains(&normalized_query)
+                    | media.author.to_lowercase().contains(&normalized_query)
+                    | media.genre.to_lowercase().contains(&normalized_query)
+                    | media.location.to_lowercase().contains(&normalized_query)
+                    | media.notes.to_lowercase().contains(&normalized_query)
             }),
     )
 }
@@ -146,7 +195,7 @@ pub fn get_filtered_names(substring: String, all_names: State<NamesState>) -> Ve
         (*all_names.names.lock().unwrap())
             .clone()
             .into_iter()
-            .filter(|s| s.contains(&substring)),
+            .filter(|s| s.to_lowercase().contains(&substring.to_lowercase())),
     )
 }
 
@@ -156,7 +205,7 @@ pub fn get_filtered_genres(substring: String, all_genres: State<GenresState>) ->
         (*all_genres.genres.lock().unwrap())
             .clone()
             .into_iter()
-            .filter(|s| s.contains(&substring)),
+            .filter(|s| s.to_lowercase().contains(&substring.to_lowercase())),
     )
 }
 
@@ -169,7 +218,7 @@ pub fn get_filtered_locations(
         (*all_locations.locations.lock().unwrap())
             .clone()
             .into_iter()
-            .filter(|s| s.contains(&substring)),
+            .filter(|s| s.to_lowercase().contains(&substring.to_lowercase())),
     )
 }
 

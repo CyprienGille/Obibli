@@ -1,18 +1,20 @@
 <script lang="ts">
 	import logo from '$lib/assets/obibli.svg';
+	import edit from '$lib/assets/edit.svg';
+	import trash from '$lib/assets/trash.svg';
 	import { invoke } from '@tauri-apps/api/tauri';
 
 	let promise: Promise<Array<Media>> = invoke('get_empty');
-	let unsaved_promise: Promise<boolean> = invoke('get_false');
-	let names_promise: Promise<Array<string>> = invoke('get_empty');
-	let genres_promise: Promise<Array<string>> = invoke('get_empty');
-	let locations_promise: Promise<Array<string>> = invoke('get_empty');
+	let unsavedPromise: Promise<boolean> = invoke('get_false');
+	let namesPromise: Promise<Array<string>> = invoke('get_empty');
+	let genresPromise: Promise<Array<string>> = invoke('get_empty');
+	let locationsPromise: Promise<Array<string>> = invoke('get_empty');
 
-	let nav_id = 0; //0 for home, -1 for browse, 1 for add
-	let details_id = -1;
+	let navId = -1; //-1 for home, -3 for browse, -2 for add
+	let detailsId = -1;
 	let query = '';
 
-	let new_media: Media = {
+	let newMedia: Media = {
 		title: '',
 		author: '',
 		genre: '',
@@ -22,106 +24,139 @@
 		notes: ''
 	};
 
-	function load_data() {
+	let editedMedia: Media = {
+		title: '',
+		author: '',
+		genre: '',
+		copies: 0,
+		year: 0,
+		location: '',
+		notes: ''
+	};
+
+	function loadData() {
 		invoke('load_library_file');
 		promise = invoke('get_all_medias');
-		unsaved_promise = invoke('get_unsaved_status');
+		unsavedPromise = invoke('get_unsaved_status');
 	}
 
-	function save_data() {
+	function saveData() {
 		invoke('save_lib_to_file');
-		unsaved_promise = invoke('get_unsaved_status');
+		unsavedPromise = invoke('get_unsaved_status');
 	}
 
-	function go_to_browse() {
+	function goToBrowse() {
 		promise = invoke('get_all_medias');
-		nav_id = -1;
+		navId = -3;
 	}
-	function go_to_add() {
-		nav_id = 1;
+	function goToAdd() {
+		navId = -2;
 	}
-	function go_home() {
-		nav_id = 0;
+	function goHome() {
+		navId = -1;
 	}
 
-	function display_details(id: number | undefined) {
+	function goToEdit(media: Media) {
+		editedMedia = media;
+		navId = 1;
+	}
+
+	function displayDetails(id: number | undefined) {
 		if (id === undefined) {
 			return;
 		}
-		if (details_id == id) {
-			details_id = -1;
+		if (detailsId == id) {
+			detailsId = -1;
 		} else {
-			details_id = id;
+			detailsId = id;
 		}
 	}
 
-	function get_sorted(by: string) {
+	function getSorted(by: string) {
 		promise = invoke('get_sorted_medias', { by });
 	}
 
-	function add_media() {
+	function addMedia() {
 		invoke('add_media', {
-			title: new_media.title,
-			author: new_media.author,
-			genre: new_media.genre,
-			copies: new_media.copies,
-			year: new_media.year,
-			location: new_media.location,
-			notes: new_media.notes
+			title: newMedia.title,
+			author: newMedia.author,
+			genre: newMedia.genre,
+			copies: newMedia.copies,
+			year: newMedia.year,
+			location: newMedia.location,
+			notes: newMedia.notes
 		});
-		unsaved_promise = invoke('get_unsaved_status');
-		go_home();
-		new_media.title = '';
-		new_media.author = '';
-		new_media.genre = '';
-		new_media.copies = 0;
-		new_media.year = 0;
-		new_media.location = '';
-		new_media.notes = '';
+		unsavedPromise = invoke('get_unsaved_status');
+		goHome();
+		newMedia.title = '';
+		newMedia.author = '';
+		newMedia.genre = '';
+		newMedia.copies = 0;
+		newMedia.year = 0;
+		newMedia.location = '';
+		newMedia.notes = '';
 	}
 
-	/**
-	 * @param {string} query
-	 */
-	function get_search_results() {
+	function submitEdit() {
+		invoke('edit_media', {
+			id: editedMedia.id,
+			changedTitle: editedMedia.title,
+			changedAuthor: editedMedia.author,
+			changedGenre: editedMedia.genre,
+			changedCopies: editedMedia.copies,
+			changedYear: editedMedia.year,
+			changedLocation: editedMedia.location,
+			changedNotes: editedMedia.notes
+		});
+		unsavedPromise = invoke('get_unsaved_status');
+		goToBrowse();
+	}
+
+	function removeMedia() {
+		invoke('remove_media', { id: detailsId });
+		unsavedPromise = invoke('get_unsaved_status');
+		promise = invoke('get_all_medias');
+	}
+
+	function getSearchResults() {
 		promise = invoke('get_filtered_medias', { query });
 	}
 
-	function reset_search() {
+	function resetSearch() {
 		query = '';
 		promise = invoke('get_all_medias');
 	}
 
-	function get_filtered_names() {
-		names_promise = invoke('get_filtered_names', { substring: new_media.author });
+	function getFilteredNames() {
+		namesPromise = invoke('get_filtered_names', { substring: newMedia.author });
 	}
-	function get_filtered_genres() {
-		genres_promise = invoke('get_filtered_genres', { substring: new_media.genre });
+	function getFilteredGenres() {
+		genresPromise = invoke('get_filtered_genres', { substring: newMedia.genre });
 	}
-	function get_filtered_locations() {
-		locations_promise = invoke('get_filtered_locations', { substring: new_media.location });
+	function getFilteredLocations() {
+		locationsPromise = invoke('get_filtered_locations', { substring: newMedia.location });
 	}
 
 	function handleEnterKeyDown(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
-			get_search_results();
+			getSearchResults();
 		}
 	}
 </script>
 
 <main class="h-dvh w-dvw">
 	<div class="mb-2 mt-1 flex h-12 w-full justify-evenly">
-		<button class="variant-filled-success btn text-xl" type="button" on:click={load_data}>
+		<button class="variant-filled-success btn text-xl" type="button" on:click={loadData}>
 			Charger
 		</button>
 
-		{#await unsaved_promise then unsaved}
+		{#await unsavedPromise then unsaved}
 			{#if unsaved}
-				<button class="variant-filled-error btn text-xl" type="button" on:click={save_data}>
+				<button class="variant-filled-error btn text-xl" type="button" on:click={saveData}>
 					Sauvegarder
 				</button>
 			{:else}
-				<button class="variant-filled-success btn text-xl" type="button" on:click={save_data}>
+				<button class="variant-filled-success btn text-xl" type="button" on:click={saveData}>
 					Sauvegarder
 				</button>
 			{/if}
@@ -134,18 +169,17 @@
 			</div>
 		{:then lib}
 			<div class="h-full w-full">
-				{#if nav_id != 0}
+				{#if navId != -1}
 					<div class="justify-normal text-center">
-						<button class="btn text-5xl" type="button" on:click={go_home}>🏠</button>
+						<button class="btn text-5xl" type="button" on:click={goHome}>🏠</button>
 					</div>
 				{/if}
-
-				{#if nav_id == 0}
+				{#if navId == -1}
 					<div class="flex items-center justify-evenly">
 						<button
 							class="variant-filled-secondary btn mx-3 w-full rounded-xl px-4 py-4 text-4xl font-bold"
 							type="button"
-							on:click={go_to_add}
+							on:click={goToAdd}
 						>
 							Ajouter
 						</button>
@@ -153,40 +187,40 @@
 						<button
 							class="variant-filled-secondary btn mx-3 w-full rounded-xl px-4 py-4 text-4xl font-bold"
 							type="button"
-							on:click={go_to_browse}
+							on:click={goToBrowse}
 						>
 							Parcourir
 						</button>
 					</div>
-				{:else if nav_id == 1}
+				{:else if navId == -2}
 					<!-- Adding UI -->
 					<div class="logo-cloud mx-1 grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-3">
-						<div class="logo-item">
+						<div class="logo-item -my-4">
 							<label class="label text-lg font-bold">
 								<span>Titre</span>
 								<input
-									class="input"
+									class="input font-normal"
 									type="text"
 									name="title"
 									id="title"
-									bind:value={new_media.title}
+									bind:value={newMedia.title}
 								/>
 							</label>
 						</div>
-						<div class="logo-item">
+						<div class="logo-item -my-4">
 							<label class="label text-lg font-bold">
 								<span> Auteur </span>
 								<input
-									class="input"
+									class="input font-normal"
 									type="text"
 									list="names"
 									id="author"
-									bind:value={new_media.author}
-									on:input={get_filtered_names}
-									on:focus={get_filtered_names}
+									bind:value={newMedia.author}
+									on:input={getFilteredNames}
+									on:focus={getFilteredNames}
 								/>
 								<datalist id="names">
-									{#await names_promise}
+									{#await namesPromise}
 										<option value=""></option>
 									{:then names}
 										{#each names as name}
@@ -196,33 +230,43 @@
 								</datalist>
 							</label>
 						</div>
-						<div class="logo-item">
+						<div class="logo-item -my-4">
 							<label class="label text-lg font-bold">
 								<span>Année</span>
-								<input class="input" type="number" id="year" bind:value={new_media.year} />
+								<input
+									class="input font-normal"
+									type="number"
+									id="year"
+									bind:value={newMedia.year}
+								/>
 							</label>
 						</div>
-						<div class="logo-item">
+						<div class="logo-item -my-4">
 							<label class="label text-lg font-bold">
 								<span> Copies </span>
-								<input class="input" type="number" id="copies" bind:value={new_media.copies} />
+								<input
+									class="input font-normal"
+									type="number"
+									id="copies"
+									bind:value={newMedia.copies}
+								/>
 							</label>
 						</div>
 
-						<div class="logo-item">
+						<div class="logo-item -my-4">
 							<label class="label text-lg font-bold">
 								<span> Genre </span>
 								<input
-									class="input"
+									class="input font-normal"
 									type="text"
 									list="genres"
 									id="genre"
-									bind:value={new_media.genre}
-									on:input={get_filtered_genres}
-									on:focus={get_filtered_genres}
+									bind:value={newMedia.genre}
+									on:input={getFilteredGenres}
+									on:focus={getFilteredGenres}
 								/>
 								<datalist id="genres">
-									{#await genres_promise}
+									{#await genresPromise}
 										<option value=""></option>
 									{:then genres}
 										{#each genres as genre}
@@ -232,20 +276,20 @@
 								</datalist>
 							</label>
 						</div>
-						<div class="logo-item">
+						<div class="logo-item -my-4">
 							<label class="text-lg font-bold">
 								<span> Emplacement </span>
 								<input
-									class="input"
+									class="input font-normal"
 									type="text"
 									list="locations"
 									id="location"
-									bind:value={new_media.location}
-									on:input={get_filtered_locations}
-									on:focus={get_filtered_locations}
+									bind:value={newMedia.location}
+									on:input={getFilteredLocations}
+									on:focus={getFilteredLocations}
 								/>
 								<datalist id="locations">
-									{#await locations_promise}
+									{#await locationsPromise}
 										<option value=""></option>
 									{:then locations}
 										{#each locations as location}
@@ -256,16 +300,16 @@
 							</label>
 						</div>
 
-						<div class="logo-item col-span-1 md:col-span-2 lg:col-span-3">
+						<div class="logo-item col-span-1 -my-4 md:col-span-2 lg:col-span-3">
 							<label class="label text-lg font-bold">
 								<span> Notes </span>
 								<textarea
-									class="textarea"
+									class="textarea font-normal"
 									name="notes"
 									id="notes"
 									cols="40"
-									rows="4"
-									bind:value={new_media.notes}
+									rows="3"
+									bind:value={newMedia.notes}
 								></textarea>
 							</label>
 						</div>
@@ -274,10 +318,10 @@
 						<button
 							class="variant-filled-secondary btn mt-3 text-2xl"
 							type="button"
-							on:click={add_media}>Ajouter</button
+							on:click={addMedia}>Ajouter</button
 						>
 					</div>
-				{:else if nav_id == -1}
+				{:else if navId == -3}
 					<!-- Browsing UI -->
 					<div class="mb-2 flex justify-center">
 						<input
@@ -287,23 +331,21 @@
 							bind:value={query}
 							on:keydown={handleEnterKeyDown}
 						/>
-						<button class="btn text-2xl" on:click={get_search_results}>🔎</button>
-						<button class="btn text-2xl" on:click={reset_search}>❌</button>
+						<button class="btn text-2xl" on:click={getSearchResults}>🔎</button>
+						<button class="btn text-2xl" on:click={resetSearch}>❌</button>
 					</div>
 					<div class="table-container">
 						<table class="table table-interactive table-compact">
 							<thead>
 								<tr>
 									<th>
-										<button class="underline" on:click={() => get_sorted('title')}> Titre </button>
+										<button class="underline" on:click={() => getSorted('title')}> Titre </button>
 									</th>
 									<th>
-										<button class="underline" on:click={() => get_sorted('year')}> Année </button>
+										<button class="underline" on:click={() => getSorted('year')}> Année </button>
 									</th>
 									<th>
-										<button class="underline" on:click={() => get_sorted('author')}>
-											Auteur
-										</button>
+										<button class="underline" on:click={() => getSorted('author')}> Auteur </button>
 									</th>
 									<th>Genre</th>
 									<th>Emplacement</th>
@@ -311,7 +353,7 @@
 							</thead>
 							<tbody>
 								{#each lib as media}
-									<tr on:click={() => display_details(media.id)}>
+									<tr on:click={() => displayDetails(media.id)}>
 										<td>
 											{media.title}
 										</td>
@@ -328,21 +370,159 @@
 											{media.location}
 										</td>
 									</tr>
-									{#if details_id == media.id}
+									{#if detailsId == media.id}
 										<tr>
 											<td>
 												<div class="font-bold">Copies</div>
 												<div class="">{media.copies}</div>
 											</td>
-											<td colspan="4">
+											<td colspan="2">
 												<div class="font-bold">Notes</div>
 												<div class="whitespace-pre-line">{media.notes}</div>
+											</td>
+											<td>
+												<button class="btn" on:click={() => goToEdit(media)}>
+													<img src={edit} alt="An editing icon" />
+												</button>
+											</td>
+											<td>
+												<button class="btn" on:click={removeMedia}>
+													<img src={trash} alt="An trashbin icon" />
+												</button>
 											</td>
 										</tr>
 									{/if}
 								{/each}
 							</tbody>
 						</table>
+					</div>
+				{:else if navId == 1}
+					<!-- Editing UI -->
+					<div class="logo-cloud mx-1 grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-3">
+						<div class="logo-item -my-4">
+							<label class="label text-lg font-bold">
+								<span>Titre</span>
+								<input
+									class="input font-normal"
+									type="text"
+									name="title"
+									id="title"
+									bind:value={editedMedia.title}
+								/>
+							</label>
+						</div>
+						<div class="logo-item -my-4">
+							<label class="label text-lg font-bold">
+								<span> Auteur </span>
+								<input
+									class="input font-normal"
+									type="text"
+									list="names"
+									id="author"
+									bind:value={editedMedia.author}
+									on:input={getFilteredNames}
+									on:focus={getFilteredNames}
+								/>
+								<datalist id="names">
+									{#await namesPromise}
+										<option value=""></option>
+									{:then names}
+										{#each names as name}
+											<option value={name}>{name}</option>
+										{/each}
+									{/await}
+								</datalist>
+							</label>
+						</div>
+						<div class="logo-item -my-4">
+							<label class="label text-lg font-bold">
+								<span>Année</span>
+								<input
+									class="input font-normal"
+									type="number"
+									id="year"
+									bind:value={editedMedia.year}
+								/>
+							</label>
+						</div>
+						<div class="logo-item -my-4">
+							<label class="label text-lg font-bold">
+								<span> Copies </span>
+								<input
+									class="input font-normal"
+									type="number"
+									id="copies"
+									bind:value={editedMedia.copies}
+								/>
+							</label>
+						</div>
+
+						<div class="logo-item -my-4">
+							<label class="label text-lg font-bold">
+								<span> Genre </span>
+								<input
+									class="input font-normal"
+									type="text"
+									list="genres"
+									id="genre"
+									bind:value={editedMedia.genre}
+									on:input={getFilteredGenres}
+									on:focus={getFilteredGenres}
+								/>
+								<datalist id="genres">
+									{#await genresPromise}
+										<option value=""></option>
+									{:then genres}
+										{#each genres as genre}
+											<option value={genre}>{genre}</option>
+										{/each}
+									{/await}
+								</datalist>
+							</label>
+						</div>
+						<div class="logo-item -my-4">
+							<label class="text-lg font-bold">
+								<span> Emplacement </span>
+								<input
+									class="input font-normal"
+									type="text"
+									list="locations"
+									id="location"
+									bind:value={editedMedia.location}
+									on:input={getFilteredLocations}
+									on:focus={getFilteredLocations}
+								/>
+								<datalist id="locations">
+									{#await locationsPromise}
+										<option value=""></option>
+									{:then locations}
+										{#each locations as location}
+											<option value={location}>{location}</option>
+										{/each}
+									{/await}
+								</datalist>
+							</label>
+						</div>
+						<div class="logo-item col-span-1 -my-4 md:col-span-2 lg:col-span-3">
+							<label class="label text-lg font-bold">
+								<span> Notes </span>
+								<textarea
+									class="textarea font-normal"
+									name="notes"
+									id="notes"
+									cols="40"
+									rows="3"
+									bind:value={editedMedia.notes}
+								></textarea>
+							</label>
+						</div>
+					</div>
+					<div class="flex w-full justify-center">
+						<button
+							class="variant-filled-secondary btn mt-3 text-2xl"
+							type="button"
+							on:click={submitEdit}>Valider</button
+						>
 					</div>
 				{/if}
 			</div>
